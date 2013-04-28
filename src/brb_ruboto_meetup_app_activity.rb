@@ -42,21 +42,30 @@ class BrbRubotoMeetupAppActivity
     @meet_header_view.text = "(...loading meetups...)"
     @list_view.adapter.clear
     Thread.with_large_stack(128) do
-      # android.os.Looper.prepare   # Event loop for thread; not needed as we use internal HTTP.
+
+      android.os.Looper.prepare   # Event loop for thread; needed by Exception handler?
       @meetup_api_key ||= get_string(Ruboto::R::string::meetup_api_key)
 
-      url = "https://api.meetup.com/2/events?key=#{@meetup_api_key}&sign=true&group_urlname=bergenrb&status=upcoming,past"
-      page = get_remote_page(url)
-      parsed_response = JSON.parse(page.to_s)
-      events = parsed_response['results'].reverse   # TODO: .sort{|e| e['time'].to_i }
+      # Load from Meetup.
+      begin
+        url = "https://api.meetup.com/2/events?key=#{@meetup_api_key}&sign=true&group_urlname=bergenrb&status=upcoming,past"
+        page = get_remote_page(url)
+        parsed_response = JSON.parse(page.to_s)
+        events = parsed_response['results'].reverse   # TODO: .sort{|e| e['time'].to_i }
+      rescue => err
+        puts "Error loading from Meetup: #{err.to_s}"
+        run_on_ui_thread { toast "Oisann! Meetup ville ikke leke... \n#{err.to_s}" }
+      end
 
+      # Update the UI.
       run_on_ui_thread do
         @list_view.adapter.clear
         events.each {|e| @list_view.adapter.add(e['name']) }   # TODO: .adapter.add_all
         @list_view.invalidate_views
         @meet_header_view.text = "Meetups:"
         @meetup_events = events
-      end
+      end if events
+
     end
   end
 
@@ -65,7 +74,7 @@ class BrbRubotoMeetupAppActivity
   end
 
   def clicked_on_meetup(a,v,p,i)
-    toast "Show meetup #{v.text.to_s}"
+    toast "Viser: #{v.text.to_s}"
     event = @meetup_events[p]
     go_to_url(event['event_url']) if event
   end
