@@ -1,0 +1,6 @@
+source 'https://rubygems.org/'
+
+gem 'rmeetup'
+gem 'json_pure'
+# gem 'json'
+# gem 'json-jruby'

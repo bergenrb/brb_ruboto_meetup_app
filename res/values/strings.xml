@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name='app_name'>
-        Brb Ruboto Meetup App
+        Brb Meet App
+    </string>
+    <string name='meetup_api_key'>
+        MEETUP_API_KEY_GOES_HERE
     </string>
 </resources>
